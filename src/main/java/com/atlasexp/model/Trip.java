@@ -1,6 +1,6 @@
 package com.atlasexp.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ public class Trip {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonBackReference // <- evita loop ao serializar Trip → User
+    @JsonManagedReference // Permite que o User seja serializado junto com a Trip
     private User user;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)

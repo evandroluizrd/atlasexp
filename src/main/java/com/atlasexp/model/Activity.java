@@ -1,63 +1,73 @@
 package com.atlasexp.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
-public class Trip {
+public class Activity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
-    private String destination;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String name;
+    private String description;
+    private LocalDateTime dateTime;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    @JsonBackReference // Evita recursão: Trip → User → Trip...
-    private User user;
+    @JoinColumn(name = "trip_id")
+    @JsonBackReference // Impede loop de serialização
+    private Trip trip;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
-    @JsonManagedReference // Permite serializar Trip → Activity
-    private List<Activity> activities;
+    public Activity() {}
 
-    public Trip() {}
-
-    public Trip(Long id, String title, String destination, LocalDate startDate, LocalDate endDate, User user, List<Activity> activities) {
+    public Activity(Long id, String name, String description, LocalDateTime dateTime, Trip trip) {
         this.id = id;
-        this.title = title;
-        this.destination = destination;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.user = user;
-        this.activities = activities;
+        this.name = name;
+        this.description = description;
+        this.dateTime = dateTime;
+        this.trip = trip;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getDestination() { return destination; }
-    public void setDestination(String destination) { this.destination = destination; }
+    public String getName() {
+        return name;
+    }
 
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public String getDescription() {
+        return description;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public List<Activity> getActivities() { return activities; }
-    public void setActivities(List<Activity> activities) { this.activities = activities; }
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public Trip getTrip() {
+        return trip;
+    }
+
+    public void setTrip(Trip trip) {
+        this.trip = trip;
+    }
 }

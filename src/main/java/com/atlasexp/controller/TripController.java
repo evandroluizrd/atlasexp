@@ -1,12 +1,13 @@
 package com.atlasexp.controller;
 
-import com.atlasexp.model.Trip;
+import com.atlasexp.dto.TripDTO;
 import com.atlasexp.service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/trips")
@@ -16,39 +17,29 @@ public class TripController {
     private TripService tripService;
 
     @GetMapping
-    public List<Trip> getAllTrips() {
+    public List<TripDTO> getAllTrips() {
         return tripService.getAllTrips();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Trip> getTripById(@PathVariable Long id) {
-        return tripService.getTripById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<TripDTO> getTripById(@PathVariable Long id) {
+        Optional<TripDTO> trip = tripService.getTripById(id);
+        return trip.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<Trip> createTrip(@RequestBody Trip trip) {
-    return ResponseEntity.ok(tripService.createTrip(trip));
+    public TripDTO createTrip(@RequestBody TripDTO tripDTO) {
+        return tripService.createTrip(tripDTO);
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<Trip> updateTrip(@PathVariable Long id, @RequestBody Trip trip) {
-        Trip updated = tripService.updateTrip(id, trip);
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<TripDTO> updateTrip(@PathVariable Long id, @RequestBody TripDTO tripDTO) {
+        TripDTO updated = tripService.updateTrip(id, tripDTO);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteTrip(@PathVariable Long id) {
-        if (tripService.deleteTrip(id)) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteTrip(@PathVariable Long id) {
+        return tripService.deleteTrip(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

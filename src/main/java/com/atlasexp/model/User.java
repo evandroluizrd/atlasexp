@@ -1,12 +1,12 @@
 package com.atlasexp.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
-@Table(name = "users") // <- aqui está o ajuste essencial
+@Table(name = "users")
 public class User {
 
     @Id
@@ -18,7 +18,7 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference // <- evita loop de serialização
+    @JsonBackReference // ← Corrigido aqui para evitar loop com Trip
     private List<Trip> trips;
 
     public User() {}

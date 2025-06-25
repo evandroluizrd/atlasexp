@@ -1,5 +1,7 @@
 package com.atlasexp.service;
 
+import com.atlasexp.dto.TripDTO;
+import com.atlasexp.mapper.TripMapper;
 import com.atlasexp.model.Trip;
 import com.atlasexp.model.User;
 import com.atlasexp.repository.TripRepository;
@@ -7,11 +9,16 @@ import com.atlasexp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TripService {
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Autowired
     private TripRepository tripRepository;
@@ -19,49 +26,61 @@ public class TripService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Trip> getAllTrips() {
-        return tripRepository.findAll();
+    public List<TripDTO> getAllTrips() {
+        return tripRepository.findAll().stream()
+                .map(TripMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Trip> getTripById(Long id) {
-        return tripRepository.findById(id);
+    public Optional<TripDTO> getTripById(Long id) {
+        return tripRepository.findById(id)
+                .map(TripMapper::toDTO);
     }
 
-    public Trip createTrip(Trip trip) {
-        // Verifica se o usuário existe
-        if (trip.getUser() != null && trip.getUser().getId() != null) {
-            Optional<User> userOptional = userRepository.findById(trip.getUser().getId());
-            if (userOptional.isPresent()) {
-                trip.setUser(userOptional.get());
-            } else {
-                throw new IllegalArgumentException("Usuário com ID " + trip.getUser().getId() + " não encontrado.");
-            }
-        } else {
-            throw new IllegalArgumentException("Usuário é obrigatório para criar uma viagem.");
+    @Transactional
+    public TripDTO createTrip(TripDTO tripDTO) {
+        Optional<User> userOpt = userRepository.findById(tripDTO.getUserId());
+
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("Usuário não encontrado com ID: " + tripDTO.getUserId());
         }
 
-        return tripRepository.save(trip);
+        Trip trip = TripMapper.toEntity(tripDTO, userOpt.get());
+        Trip saved = tripRepository.save(trip);
+
+        // Log de auditoria
+        auditLogService.log("CREATE", "Trip", saved.getId(), null);
+
+        return TripMapper.toDTO(saved);
     }
 
-    public Trip updateTrip(Long id, Trip updatedTrip) {
-        return tripRepository.findById(id).map(trip -> {
-            trip.setTitle(updatedTrip.getTitle());
-            trip.setDestination(updatedTrip.getDestination());
-            trip.setStartDate(updatedTrip.getStartDate());
-            trip.setEndDate(updatedTrip.getEndDate());
+    @Transactional
+    public TripDTO updateTrip(Long id, TripDTO tripDTO) {
+        Optional<Trip> optional = tripRepository.findById(id);
+        Optional<User> userOpt = userRepository.findById(tripDTO.getUserId());
 
-            if (updatedTrip.getUser() != null && updatedTrip.getUser().getId() != null) {
-                Optional<User> userOptional = userRepository.findById(updatedTrip.getUser().getId());
-                userOptional.ifPresent(trip::setUser);
-            }
+        if (optional.isPresent() && userOpt.isPresent()) {
+            Trip updated = TripMapper.toEntity(tripDTO, userOpt.get());
+            updated.setId(id);
+            Trip saved = tripRepository.save(updated);
 
-            return tripRepository.save(trip);
-        }).orElse(null);
+            // Log de auditoria
+            auditLogService.log("UPDATE", "Trip", saved.getId(), null);
+
+            return TripMapper.toDTO(saved);
+        }
+
+        return null;
     }
 
+    @Transactional
     public boolean deleteTrip(Long id) {
         if (tripRepository.existsById(id)) {
             tripRepository.deleteById(id);
+
+            // Log de auditoria
+            auditLogService.log("DELETE", "Trip", id, null);
+
             return true;
         }
         return false;
