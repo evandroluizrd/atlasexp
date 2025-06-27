@@ -23,6 +23,9 @@ public class ActivityService {
     @Autowired
     private TripRepository tripRepository;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     public List<ActivityDTO> getAllActivities() {
         return activityRepository.findAll().stream()
                 .map(ActivityMapper::toDTO)
@@ -43,6 +46,9 @@ public class ActivityService {
 
         Activity activity = ActivityMapper.toEntity(activityDTO, tripOpt.get());
         Activity saved = activityRepository.save(activity);
+
+        auditLogService.log("CREATE", "Activity", saved.getId(), null);
+
         return ActivityMapper.toDTO(saved);
     }
 
@@ -53,8 +59,12 @@ public class ActivityService {
 
         if (optional.isPresent() && tripOpt.isPresent()) {
             Activity updated = ActivityMapper.toEntity(activityDTO, tripOpt.get());
-            updated.setId(id); // manter o mesmo ID
-            return ActivityMapper.toDTO(activityRepository.save(updated));
+            updated.setId(id);
+            Activity saved = activityRepository.save(updated);
+
+            auditLogService.log("UPDATE", "Activity", saved.getId(), null);
+
+            return ActivityMapper.toDTO(saved);
         }
 
         return null;
@@ -64,6 +74,9 @@ public class ActivityService {
     public boolean deleteActivity(Long id) {
         if (activityRepository.existsById(id)) {
             activityRepository.deleteById(id);
+
+            auditLogService.log("DELETE", "Activity", id, null);
+
             return true;
         }
         return false;

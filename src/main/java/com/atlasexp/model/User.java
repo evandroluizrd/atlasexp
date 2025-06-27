@@ -17,8 +17,12 @@ public class User {
     private String email;
     private String password;
 
+    @Column(name = "is_premium", nullable = false)
+    private boolean isPremium;
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference // ← Corrigido aqui para evitar loop com Trip
+    @JsonBackReference
     private List<Trip> trips;
 
     public User() {}
@@ -42,6 +46,9 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public boolean isPremium() { return isPremium; }
+    public void setPremium(boolean premium) { isPremium = premium; }
 
     public List<Trip> getTrips() { return trips; }
     public void setTrips(List<Trip> trips) { this.trips = trips; }

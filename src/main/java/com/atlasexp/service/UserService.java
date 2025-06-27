@@ -5,6 +5,7 @@ import com.atlasexp.mapper.UserMapper;
 import com.atlasexp.model.User;
 import com.atlasexp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -17,6 +18,11 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuditLogService auditLogService;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -32,7 +38,12 @@ public class UserService {
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
         User user = UserMapper.toEntity(userDTO);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPremium(userDTO.isPremium());
         User saved = userRepository.save(user);
+
+        auditLogService.log("CREATE", "User", saved.getId(), null);
+
         return UserMapper.toDTO(saved);
     }
 
@@ -43,9 +54,16 @@ public class UserService {
             User user = optional.get();
             user.setName(userDTO.getName());
             user.setEmail(userDTO.getEmail());
-            user.setPassword(userDTO.getPassword());
 
+            if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            }
+
+            user.setPremium(userDTO.isPremium());
             User updated = userRepository.save(user);
+
+            auditLogService.log("UPDATE", "User", updated.getId(), null);
+
             return UserMapper.toDTO(updated);
         }
         return null;
@@ -55,8 +73,10 @@ public class UserService {
     public boolean deleteUser(Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
+            auditLogService.log("DELETE", "User", id, null);
             return true;
         }
         return false;
     }
 }
+

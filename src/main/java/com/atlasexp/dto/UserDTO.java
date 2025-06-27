@@ -17,6 +17,8 @@ public class UserDTO {
     @NotBlank(message = "A senha é obrigatória")
     private String password;
 
+    private boolean isPremium;
+
     // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -29,4 +31,7 @@ public class UserDTO {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public boolean isPremium() { return isPremium; }
+    public void setPremium(boolean isPremium) { this.isPremium = isPremium; }
 }

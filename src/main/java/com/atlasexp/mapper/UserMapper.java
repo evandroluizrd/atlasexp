@@ -11,6 +11,7 @@ public class UserMapper {
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setPassword(user.getPassword());
+        dto.setPremium(user.isPremium()); // Mapeamento do campo premium
         return dto;
     }
 
@@ -20,6 +21,7 @@ public class UserMapper {
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
+        user.setPremium(dto.isPremium()); // Mapeamento do campo premium
         return user;
     }
 }
