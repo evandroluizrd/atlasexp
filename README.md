@@ -38,7 +38,7 @@ Muitos usuários que desejam registrar e compartilhar suas experiências de viag
 - **PhotoLike**: representa uma curtida de um usuário em uma foto.
 - **AuditLog**: registro de ações CREATE, UPDATE, DELETE, LIKE e UNLIKE com timestamp e usuário responsável.
 
-## Descrição das Rotas
+## Documentação Swagger
 
 A documentação completa está disponível via Swagger:
 
@@ -46,22 +46,25 @@ A documentação completa está disponível via Swagger:
 http://localhost:8080/swagger-ui.html
 ```
 
-### Exemplos de Endpoints
+### Tabela de Rotas com Respostas Esperadas
 
-| Método | Rota              | Descrição                |
-|--------|-------------------|--------------------------|
-| POST   | /users            | Criação de usuário       |
-| POST   | /trips            | Criação de viagem        |
-| GET    | /trips            | Listagem de viagens      |
-| PUT    | /trips/{id}       | Atualização de viagem    |
-| DELETE | /trips/{id}       | Remoção de viagem        |
-| POST   | /activities       | Criação de atividade     |
-| DELETE | /activities/{id}  | Remoção de atividade     |
-| POST   | /photos           | Registro de foto         |
-| POST   | /photos/{id}/like | Curtida em uma foto      |
-| DELETE | /photos/{id}/like | Remoção de curtida       |
-| DELETE | /photos/{id}      | Deletar foto             |
-| GET    | /log              | Visualizar auditoria     |
+| Método | Rota               | Sucesso (200/201)             | Erro (400/404)                          |
+|--------|--------------------|-------------------------------|-----------------------------------------|
+| POST   | /users             | Usuário criado                | Email já cadastrado                     |
+| POST   | /trips             | Viagem criada                 | Usuário não encontrado                  |
+| GET    | /trips             | Lista de viagens              | —                                       |
+| PUT    | /trips/{id}        | Viagem atualizada             | Viagem não encontrada                   |
+| DELETE | /trips/{id}        | Viagem removida               | Viagem não encontrada                   |
+| POST   | /activities        | Atividade criada              | Viagem não encontrada                   |
+| DELETE | /activities/{id}   | Atividade removida            | Atividade não encontrada                |
+| POST   | /photos            | Foto registrada               | Usuário ou viagem não encontrados       |
+| DELETE | /photos/{id}       | Foto removida                 | Foto não encontrada                     |
+| POST   | /photos/like       | Curtida registrada            | Curtida já feita ou própria foto        |
+| DELETE | /photos/{id}/like  | Curtida removida              | Curtida não encontrada                  |
+| GET    | /log               | Lista de auditoria            | —                                       |
+
+
+
 
 ## Exemplos de Requisições e Respostas
 
